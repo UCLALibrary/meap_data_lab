@@ -1,0 +1,856 @@
+---
+title: "MEAP App Project"
+author: "Shiyu Murashima"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Libraries
+```{r}
+library(dplyr)
+```
+
+# Loading in Data
+```{r}
+# Funded Projects
+funded <- read.csv("Funded Projects_MEAP - MEAP - Projects by Key (Jira).csv")
+
+# Preliminary App
+c1_prelim <- read.csv("Copy of Cohort 1 - Preliminary Applications v2 - Summary.csv")
+c2_prelim <- read.csv("Copy of Cohort 2 - Preliminary Applications v2 - c2 prelim applications.csv")
+c3_prelim <- read.csv("Copy of Cohort 3 Applications Stats and Info - Prelim Apps.csv")
+c4_prelim <- read.csv("Copy of Cohort 4 - Preliminary Applications - General.csv")
+c5_prelim <- read.csv("Copy of Cohort 5_Preliminary - Copy of App Notes - Main.csv")
+c6_prelim <- read.csv("Copy of Cohort 6_Prelim Data - Sheet1.csv")
+
+# Detailed App
+c1_detail <- read.csv("Copy of Cohort 1 - Detailed Applications v2 - Sheet1.csv")
+c2_detail <- read.csv("Copy of Cohort 2 - Detailed Applications v2 - Application Info.csv")
+c3_detail <- read.csv("Copy of Cohort 3 Applications Stats and Info - Detailed Apps.csv")
+c4_detail <- read.csv("Copy of Cohort 4 - Detailed Applications - Sheet 1.csv")
+c5_detail <- read.csv("Copy of Cohort 5_Detailed Applications - Sheet1.csv")
+c6_detail <- read.csv("Copy of Cohort 6_Detailed Application Details - Sheet1.csv")
+```
+
+# Data Cleaning (Preliminary App)
+```{r}
+# Adding cohort name column
+c1_prelim <- mutate(c1_prelim, Cohort = "Cohort 1")
+c2_prelim <- mutate(c2_prelim, Cohort = "Cohort 2")
+c3_prelim <- mutate(c3_prelim, Cohort = "Cohort 3")
+c4_prelim <- mutate(c4_prelim, Cohort = "Cohort 4")
+c5_prelim <- mutate(c5_prelim, Cohort = "Cohort 5")
+c6_prelim <- mutate(c6_prelim, Cohort = "Cohort 6")
+
+# Matching column names
+colnames(c1_prelim)[colnames(c1_prelim) == "Archival.Continent"] <- "Archival.Region"
+colnames(c1_prelim)[colnames(c1_prelim) == "PI.Continent"] <- "PI.Region"
+
+colnames(c3_prelim)[colnames(c3_prelim) == "Current.Status"] <- "Decision"
+colnames(c3_prelim)[colnames(c3_prelim) == "Primary.archival.type."] <- "Archival.Material"
+
+colnames(c4_prelim)[colnames(c4_prelim) == "Invited.to.Detailed."] <- "Decision"
+colnames(c4_prelim)[colnames(c4_prelim) == "Region"] <- "PI.Region"
+colnames(c4_prelim)[colnames(c4_prelim) == "Country.of.Archival.Material"] <- "Archival.Country"
+colnames(c4_prelim)[colnames(c4_prelim) == "Region.of.Archival.Material"] <- "Archival.Region"
+colnames(c4_prelim)[colnames(c4_prelim) == "Primary.archival.type."] <- "Archival.Material"
+colnames(c4_prelim)[colnames(c4_prelim) == "Type.of.Project"] <- "Grant"
+
+colnames(c5_prelim)[colnames(c5_prelim) == "REC.FOR.DETAILED"] <- "Decision"
+colnames(c5_prelim)[colnames(c5_prelim) == "Type.of.Project"] <- "Grant"
+colnames(c5_prelim)[colnames(c5_prelim) == "Applicant.Region"] <- "PI.Region"
+colnames(c5_prelim)[colnames(c5_prelim) == "Country.of.Archival.Material"] <- "Archival.Country"
+colnames(c5_prelim)[colnames(c5_prelim) == "Region.of.Archival.Material"] <- "Archival.Region"
+colnames(c5_prelim)[colnames(c5_prelim) == "Primary.archival.type."] <- "Archival.Material"
+
+colnames(c6_prelim)[colnames(c6_prelim) == "Type.of.Project"] <- "Grant"
+colnames(c6_prelim)[colnames(c6_prelim) == "Country.of.Archival.Collection"] <- "Archival.Country"
+colnames(c6_prelim)[colnames(c6_prelim) == "Region.of.Archival.Collection"] <- "Archival.Region"
+colnames(c6_prelim)[colnames(c6_prelim) == "Country"] <- "PI.Country"
+colnames(c6_prelim)[colnames(c6_prelim) == "Region"] <- "PI.Region"
+
+# Fixing country names
+c1_prelim$Archival.Country[c1_prelim$Archival.Country == "india"] <- "India"
+c1_prelim$Archival.Country[c1_prelim$Archival.Country == "Phillippines"] <- "Philippines"
+c1_prelim$Archival.Country[c1_prelim$Archival.Country == "Republic of Guinea"] <- "Guinea"
+c1_prelim$Archival.Country[c1_prelim$Archival.Country == "United States"] <- "United States of America"
+c1_prelim$Archival.Country[c1_prelim$Archival.Country == "USA (Puerto-Rico)"] <- "Puerto-Rico (U.S. Territory)"
+
+c2_prelim$Archival.Country[c2_prelim$Archival.Country == "(Multiple) Egypt, Palestine, Tunisia"] <- "Multiple"
+c2_prelim$Archival.Country[c2_prelim$Archival.Country == "(Multiple) Kazakhstan, Russia"] <- "Multiple"
+c2_prelim$Archival.Country[c2_prelim$Archival.Country == "(Multiple) Lebanon, Syria"] <- "Multiple"
+c2_prelim$Archival.Country[c2_prelim$Archival.Country == "Republica Dominicana"] <- "Dominican Republic"
+
+c3_prelim$Archival.Country[c3_prelim$Archival.Country == "Bangalore"] <- "India"
+c3_prelim$Archival.Country[c3_prelim$Archival.Country == "DRC"] <- "Democratic Republic of the Congo"
+c3_prelim$Archival.Country[c3_prelim$Archival.Country == "Palestine, Jordan, Iraq, Egypt, Tunisia"] <- "Multiple"
+c3_prelim$Archival.Country[c3_prelim$Archival.Country == "Republic of Armenia"] <- "Armenia"
+c3_prelim$Archival.Country[c3_prelim$Archival.Country == "Republic of Moldova"] <- "Moldova"
+c3_prelim$Archival.Country[c3_prelim$Archival.Country == "Republic of North Macedonia"] <- "North Macedonia"
+c3_prelim$Archival.Country[c3_prelim$Archival.Country == "Russian Federation"] <- "Russia"
+c3_prelim$Archival.Country[c3_prelim$Archival.Country == "RWANDA"] <- "Rwanda"
+c3_prelim$Archival.Country[c3_prelim$Archival.Country == "São Tomé e Principe"] <- "São Tomé and Principe"
+c3_prelim$Archival.Country[c3_prelim$Archival.Country == "United States"] <- "United States of America"
+c3_prelim$Archival.Country[c3_prelim$Archival.Country == "USA and Iraq"] <- "Multiple"
+
+c4_prelim$Archival.Country[c4_prelim$Archival.Country == "Brasil"] <- "Brazil"
+c4_prelim$Archival.Country[c4_prelim$Archival.Country == "Egypt, Lebanon and Jordan"] <- "Multiple"
+c4_prelim$Archival.Country[c4_prelim$Archival.Country == "Guinea-Bissau "] <- "Guinea-Bissau"
+c4_prelim$Archival.Country[c4_prelim$Archival.Country == "India, USA, UK, Africa and Canada"] <- "Multiple"
+c4_prelim$Archival.Country[c4_prelim$Archival.Country == "Indonesia "] <- "Indonesia"
+c4_prelim$Archival.Country[c4_prelim$Archival.Country == "KENYA"] <- "Kenya"
+c4_prelim$Archival.Country[c4_prelim$Archival.Country == "Mexico primarily (Other Latin American countries and Spain, secondary)"] <- "Multiple"
+c4_prelim$Archival.Country[c4_prelim$Archival.Country == "Mexico, Cuba"] <- "Multiple"
+c4_prelim$Archival.Country[c4_prelim$Archival.Country == "Republic of Armenia"] <- "Armenia"
+c4_prelim$Archival.Country[c4_prelim$Archival.Country == "Republic of Congo"] <- "Democratic Republic of the Congo"
+c4_prelim$Archival.Country[c4_prelim$Archival.Country == "RWANDA"] <- "Rwanda"
+c4_prelim$Archival.Country[c4_prelim$Archival.Country == "Turkey and Bulgaria"] <- "Multiple"
+c4_prelim$Archival.Country[c4_prelim$Archival.Country == "Türkiye"] <- "Turkey"
+c4_prelim$Archival.Country[c4_prelim$Archival.Country == "United States"] <- "United States of America"
+c4_prelim$Archival.Country[c4_prelim$Archival.Country == "USA"] <- "United States of America"
+
+c5_prelim$Archival.Country[c5_prelim$Archival.Country == "D.R. Congo"] <- "Democratic Republic of the Congo"
+c5_prelim$Archival.Country[c5_prelim$Archival.Country == "Republic of Trinidad and Tobago"] <- "Trinidad and Tobago"
+c5_prelim$Archival.Country[c5_prelim$Archival.Country == "Sénégal"] <- "Senegal"
+
+c6_prelim$Archival.Country[c6_prelim$Archival.Country == "Almost in Vietnam, some in Japan"] <- "Multiple"
+c6_prelim$Archival.Country[c6_prelim$Archival.Country == "DRC"] <- "Democratic Republic of the Congo"
+c6_prelim$Archival.Country[c6_prelim$Archival.Country == "Guinea Bissau"] <- "Guinea-Bissau"
+c6_prelim$Archival.Country[c6_prelim$Archival.Country == "Haïti"] <- "Haiti"
+c6_prelim$Archival.Country[c6_prelim$Archival.Country == "Ho Chi Minh City, Vietnam"] <- "Vietnam"
+c6_prelim$Archival.Country[c6_prelim$Archival.Country == "Singapore & Malaysia (formerly Malaya)"] <- "Multiple"
+c6_prelim$Archival.Country[c6_prelim$Archival.Country == "SPAIN"] <- "Spain"
+c6_prelim$Archival.Country[c6_prelim$Archival.Country == "United States"] <- "United States of America"
+
+# Fixing region names
+c1_prelim$Archival.Region[c1_prelim$Archival.Region == "Other (West Asia)"] <- "Middle East"
+c1_prelim$Archival.Region[c1_prelim$Archival.Region == "South America"] <- "Latin America"
+c2_prelim$Archival.Region[c2_prelim$Archival.Region == "Central America + Caribbean"] <- "Central America and Caribbean"
+c2_prelim$Archival.Region[c2_prelim$Archival.Region == "Other (Central Asia)"] <- "Central Asia"
+c2_prelim$Archival.Region[c2_prelim$Archival.Region == "Other (Central Asia, Eurasia)"] <- "Eurasia"
+c2_prelim$Archival.Region[c2_prelim$Archival.Region == "Other (Eurasia)"] <- "Eurasia"
+c2_prelim$Archival.Region[c2_prelim$Archival.Region == "Other (Europe)"] <- "Europe"
+c2_prelim$Archival.Region[c2_prelim$Archival.Region == "Other (South East Europe)"] <- "Europe"
+c2_prelim$Archival.Region[c2_prelim$Archival.Region == "South East Asia"] <- "Southeast Asia"
+c3_prelim$Archival.Region[c3_prelim$Archival.Region == "Other (Central Asia)"] <- "Central Asia"
+c3_prelim$Archival.Region[c3_prelim$Archival.Region == "Other (Europe)"] <- "Europe"
+c3_prelim$Archival.Region[c3_prelim$Archival.Region == "Other (North America)"] <- "North America"
+c3_prelim$Archival.Region[c3_prelim$Archival.Region == "Other (The Balkans)"] <- "Europe"
+c3_prelim$Archival.Region[c3_prelim$Archival.Region == "Other (West Asia)"] <- "Middle East"
+c3_prelim$Archival.Region[c3_prelim$Archival.Region == "South East Asia"] <- "Southeast Asia"
+c4_prelim$Archival.Region[c4_prelim$Archival.Region == "South East Asia"] <- "Southeast Asia"
+c5_prelim$Archival.Region[c5_prelim$Archival.Region == "South East Asia"] <- "Southeast Asia"
+c6_prelim$Archival.Region[c6_prelim$Archival.Region == "South America"] <- "Latin America"
+
+# Fixing decision labels
+c1_prelim$Decision[c1_prelim$Decision == "P - Rejected"] <- "No"
+c1_prelim$Decision[c1_prelim$Decision == "D - No"] <- "No"
+c1_prelim$Decision[c1_prelim$Decision == "D - Approve, No"] <- "No"
+c1_prelim$Decision[c1_prelim$Decision == "P - Detailed"] <- "Yes"
+c1_prelim$Decision[c1_prelim$Decision == "D - Yes"] <- "Yes"
+c2_prelim$Decision[c2_prelim$Decision == "P - Rejected"] <- "No"
+c2_prelim$Decision[c2_prelim$Decision == "D- No"] <- "No"
+c2_prelim$Decision[c2_prelim$Decision == "D - Yes"] <- "Yes"
+c3_prelim$Decision[c3_prelim$Decision == "No -Declined after Preliminary Round"] <- "No"
+c3_prelim$Decision[c3_prelim$Decision == "Yes - Detailed Application Round - Submitted"] <- "Yes"
+c3_prelim$Decision[c3_prelim$Decision == "Yes - Detailed Application Round - Not submitted"] <- "Yes"
+c4_prelim$Decision[c4_prelim$Decision == "NO"] <- "No"
+c4_prelim$Decision[c4_prelim$Decision == "YES"] <- "Yes"
+
+# Using only columns of interest that are available for all cohorts
+reduced_prelim <- function(data){
+  data[,c("Cohort", "Decision", "Archival.Country","Archival.Region", "PI.Region", "Grant")]
+}
+
+# Merging all cohort data together
+prelim <- rbind(reduced_prelim(c1_prelim), reduced_prelim(c2_prelim), reduced_prelim(c3_prelim),
+                reduced_prelim(c4_prelim), reduced_prelim(c5_prelim), reduced_prelim(c6_prelim))
+
+# Fixing values
+prelim$Grant[prelim$Grant == "Planning grant of up to $15,000 for up to 1 year to evaluate collections for digitization and/or curation."] <- "Planning"
+prelim$Grant[prelim$Grant == "Project grant of up to $50,000 for up to 2 years to digitize (or organize already-digital assets), describe, and deliver digital assets and metadata to the UCLA Library."] <- "Project"
+prelim$Grant[prelim$Grant == "Project Grant"] <- "Project"
+prelim$Grant[prelim$Grant == "Planning Grant"] <- "Planning"
+prelim$Grant[prelim$Grant == "Regional Grant"] <- "Regional"
+
+prelim$PI.Region[prelim$PI.Region == "Other (West Asia)"] <- "Middle East"
+prelim$PI.Region[prelim$PI.Region == "Australia"] <- "Oceania"
+prelim$PI.Region[prelim$PI.Region == "Central America + Caribbean"] <- "Central America and Caribbean"
+prelim$PI.Region[prelim$PI.Region == "South East Asia"] <- "Southeast Asia"
+prelim$PI.Region[prelim$PI.Region == "Other (Eurasia)"] <- "Eurasia"
+prelim$PI.Region[prelim$PI.Region == "Other (Central Asia)"] <- "Central Asia"
+prelim$PI.Region[prelim$PI.Region == "Other (Oceania)"] <- "Oceania"
+```
+
+- Cohort 6, Decision "Yes" highlighted?
+- Cohort 5, no PI.Country
+- Cohort 6, no Archival.Material
+
+# Data Cleaning (Detailed App)
+```{r}
+# Adding cohort name column
+c1_detail <- mutate(c1_detail, Cohort = "Cohort 1")
+c2_detail <- mutate(c2_detail, Cohort = "Cohort 2")
+c3_detail <- mutate(c3_detail, Cohort = "Cohort 3")
+c4_detail <- mutate(c4_detail, Cohort = "Cohort 4")
+c5_detail <- mutate(c5_detail, Cohort = "Cohort 5")
+c6_detail <- mutate(c6_detail, Cohort = "Cohort 6")
+
+# Matching column names
+colnames(c1_detail)[colnames(c1_detail) == "Archival.Continent"] <- "Archival.Region"
+colnames(c1_detail)[colnames(c1_detail) == "PI.Continent"] <- "PI.Region"
+
+colnames(c2_detail)[colnames(c2_detail) == "Funded."] <- "Decision"
+colnames(c2_detail)[colnames(c2_detail) == "Grant.Type"] <- "Grant"
+colnames(c2_detail)[colnames(c2_detail) == "Amt.Requesting"] <- "Amount"
+colnames(c2_detail)[colnames(c2_detail) == "Primary.Material"] <- "Archival.Material"
+
+colnames(c3_detail)[colnames(c3_detail) == "Status"] <- "Decision"
+colnames(c3_detail)[colnames(c3_detail) == "Primary.archival.type."] <- "Archival.Material"
+
+colnames(c4_detail)[colnames(c4_detail) == "Region.of.Primary.Applicant"] <- "PI.Region"
+colnames(c4_detail)[colnames(c4_detail) == "Country.of.Archival.Material"] <- "Archival.Country"
+colnames(c4_detail)[colnames(c4_detail) == "Region.of.Archival.Material"] <- "Archival.Region"
+colnames(c4_detail)[colnames(c4_detail) == "Primary.archival.type."] <- "Archival.Material"
+colnames(c4_detail)[colnames(c4_detail) == "Total.Request.for.Funds."] <- "Amount"
+colnames(c4_detail)[colnames(c4_detail) == "Type.of.Project"] <- "Grant"
+
+colnames(c5_detail)[colnames(c5_detail) == "Funded"] <- "Decision"
+colnames(c5_detail)[colnames(c5_detail) == "Project.Type"] <- "Grant"
+colnames(c5_detail)[colnames(c5_detail) == "Total.Request"] <- "Amount"
+colnames(c5_detail)[colnames(c5_detail) == "Country.of.Archival.Material"] <- "Archival.Country"
+colnames(c5_detail)[colnames(c5_detail) == "Region.of.Archival.Material"] <- "Archival.Region"
+
+colnames(c6_detail)[colnames(c6_detail) == "X.ProjectType..Type.of.Project"] <- "Grant"
+colnames(c6_detail)[colnames(c6_detail) == "Total.Request.for.Funds."] <- "Amount"
+colnames(c6_detail)[colnames(c6_detail) == "X.primary_coll_2..Primary.Archival.Collection..nbsp....Country.of.Archival.collection"] <- "Archival.Country"
+colnames(c6_detail)[colnames(c6_detail) == "X.primary_coll_3..Primary.Archival.Collection..nbsp....Region.of.Archival.Collection"] <- "Archival.Region"
+colnames(c6_detail)[colnames(c6_detail) == "Primary.Applicant..Country.nbsp."] <- "PI.Country"
+colnames(c6_detail)[colnames(c6_detail) == "Primary.Applicant..Region"] <- "PI.Region"
+
+# Fixing country names
+c1_detail$Archival.Country[c1_detail$Archival.Country == "Republic of Guinea"] <- "Guinea"
+
+c2_detail$Archival.Country[c2_detail$Archival.Country == "Michoacán, México"] <- "Mexico"
+c2_detail$Archival.Country[c2_detail$Archival.Country == "Republica Dominicana"] <- "Dominican Republic"
+
+c3_detail$Archival.Country[c3_detail$Archival.Country == "DRC"] <- "Democratic Republic of the Congo"
+c3_detail$Archival.Country[c3_detail$Archival.Country == "Republic of Armenia"] <- "Armenia"
+c3_detail$Archival.Country[c3_detail$Archival.Country == "Republic of Moldova"] <- "Moldova"
+c3_detail$Archival.Country[c3_detail$Archival.Country == "Russian Federation"] <- "Russia"
+c3_detail$Archival.Country[c3_detail$Archival.Country == "São Tomé e Principe"] <- "São Tomé and Principe"
+
+c4_detail$Archival.Country[c4_detail$Archival.Country == "India and Africa"] <- "Multiple"
+c4_detail$Archival.Country[c4_detail$Archival.Country == "Mexico primarily (Cuba, Argentina, Peru, Brazil, Spain, France, and United States secondarily)"] <- "Multiple"
+c4_detail$Archival.Country[c4_detail$Archival.Country == "Turkey and Bulgaria"] <- "Multiple"
+
+c5_detail$Archival.Country[c5_detail$Archival.Country == "D.R. Congo"] <- "Democratic Republic of the Congo"
+c5_detail$Archival.Country[c5_detail$Archival.Country == "Republic of Trinidad and Tobago"] <- "Trinidad and Tobago"
+c5_detail$Archival.Country[c5_detail$Archival.Country == "Sénégal"] <- "Senegal"
+c5_detail$Archival.Country[c5_detail$Archival.Country == "Turkey and Bulgaria"] <- "Multiple"
+c5_detail$Archival.Country[c5_detail$Archival.Country == "Türkiye"] <- "Turkey"
+c5_detail$Archival.Country[c5_detail$Archival.Country == "Таджикистан"] <- "Tajikistan"
+
+c6_detail$Archival.Country[c6_detail$Archival.Country == "Bolivia, Argentina, Chile, Uruguay and Venezuela"] <- "Multiple"
+c6_detail$Archival.Country[c6_detail$Archival.Country == "DRC"] <- "Democratic Republic of the Congo"
+c6_detail$Archival.Country[c6_detail$Archival.Country == "Ethiopia, Addis Ababa"] <- "Ethiopia"
+c6_detail$Archival.Country[c6_detail$Archival.Country == "GHANA"] <- "Ghana"
+c6_detail$Archival.Country[c6_detail$Archival.Country == "Singapore & Malaysia (formerly Malaya)"] <- "Multiple"
+
+# Fixing region names
+c1_detail$Archival.Region[c1_detail$Archival.Region == "South America"] <- "Latin America"
+c2_detail$Archival.Region[c2_detail$Archival.Region == "South East Asia"] <- "Southeast Asia"
+c3_detail$Archival.Region[c3_detail$Archival.Region == "Other (Central Asia)"] <- "Central Asia"
+c3_detail$Archival.Region[c3_detail$Archival.Region == "Other (Europe)"] <- "Europe"
+c3_detail$Archival.Region[c3_detail$Archival.Region == "Other (West Asia)"] <- "Middle East"
+c3_detail$Archival.Region[c3_detail$Archival.Region == "South East Asia"] <- "Southeast Asia"
+c4_detail$Archival.Region[c4_detail$Archival.Region == "South East Asia"] <- "Southeast Asia"
+c5_detail$Archival.Region[c5_detail$Archival.Region == "Latin Ameria"] <- "Latin America"
+c5_detail$Archival.Region[c5_detail$Archival.Region == "South East Asia"] <- "Southeast Asia"
+c6_detail$Archival.Region[c6_detail$Archival.Region == "Caucus"] <- "Caucasus"
+
+# Using only columns of interest that are available for all cohorts
+reduced_detail <- function(data){
+  data[,c("Cohort", "Archival.Country","Archival.Region", "Grant")]
+}
+
+# Merging all cohort data together
+detail <- rbind(reduced_detail(c1_detail), reduced_detail(c2_detail), reduced_detail(c3_detail),
+                reduced_detail(c4_detail), reduced_detail(c5_detail), reduced_detail(c6_detail))
+
+# Fixing values
+detail$Grant[detail$Grant == "Planning Grant"] <- "Planning"
+detail$Grant[detail$Grant == "Project Grant"] <- "Project"
+detail$Grant[detail$Grant == "Regional Grant"] <- "Regional"
+
+detail$Archival.Region[detail$Archival.Region == "Caucus"] <- "Caucasus"
+detail$Archival.Region[detail$Archival.Region == "Other (Central Asia)"] <- "Central Asia"
+detail$Archival.Region[detail$Archival.Region == "Other (Europe)"] <- "Europe"
+detail$Archival.Region[detail$Archival.Region == "Other (West Asia)"] <- "Middle East"
+detail$Archival.Region[detail$Archival.Region == "Latin Ameria"] <- "Latin America"
+detail$Archival.Region[detail$Archival.Region == "South America"] <- "Latin America"
+detail$Archival.Region[detail$Archival.Region == "South East Asia"] <- "Southeast Asia"
+```
+
+- Cohort 3, no Decision or Amount
+- Cohort 4, no Decision or PI.Country
+- Cohort 5, no PI.Country, PI.Region, Archival.Material
+
+# New Countries applications year over year - Archival Country
+```{r}
+# Getting total count of applications from each country
+prelim_country <- as.data.frame(table(prelim$Archival.Country))
+detail_country <- as.data.frame(table(detail$Archival.Country))
+
+# Merging preliminary cohort counts
+prelim_country <- merge(prelim_country, as.data.frame(table(c1_prelim$Archival.Country)), 
+                   by = "Var1", all.x = TRUE)
+names(prelim_country)[3] <- "Cohort.1"
+prelim_country$Cohort.1[is.na(prelim_country$Cohort.1)] <- 0
+
+prelim_country <- merge(prelim_country, as.data.frame(table(c2_prelim$Archival.Country)), 
+                   by = "Var1", all.x = TRUE)
+names(prelim_country)[4] <- "Cohort.2"
+prelim_country$Cohort.2[is.na(prelim_country$Cohort.2)] <- 0
+
+prelim_country <- merge(prelim_country, as.data.frame(table(c3_prelim$Archival.Country)), 
+                   by = "Var1", all.x = TRUE)
+names(prelim_country)[5] <- "Cohort.3"
+prelim_country$Cohort.3[is.na(prelim_country$Cohort.3)] <- 0
+
+prelim_country <- merge(prelim_country, as.data.frame(table(c4_prelim$Archival.Country)), 
+                   by = "Var1", all.x = TRUE)
+names(prelim_country)[6] <- "Cohort.4"
+prelim_country$Cohort.4[is.na(prelim_country$Cohort.4)] <- 0
+
+prelim_country <- merge(prelim_country, as.data.frame(table(c5_prelim$Archival.Country)), 
+                   by = "Var1", all.x = TRUE)
+names(prelim_country)[7] <- "Cohort.5"
+prelim_country$Cohort.5[is.na(prelim_country$Cohort.5)] <- 0
+
+prelim_country <- merge(prelim_country, as.data.frame(table(c6_prelim$Archival.Country)), 
+                   by = "Var1", all.x = TRUE)
+names(prelim_country)[8] <- "Cohort.6"
+prelim_country$Cohort.6[is.na(prelim_country$Cohort.6)] <- 0
+
+colnames(prelim_country)[colnames(prelim_country) == "Var1"] <- "Archival.Country"
+colnames(prelim_country)[colnames(prelim_country) == "Freq.x"] <- "Sum"
+
+# Merging detailed cohort counts
+detail_country <- merge(detail_country, as.data.frame(table(c1_detail$Archival.Country)), 
+                   by = "Var1", all.x = TRUE)
+names(detail_country)[3] <- "Cohort.1"
+detail_country$Cohort.1[is.na(detail_country$Cohort.1)] <- 0
+
+detail_country <- merge(detail_country, as.data.frame(table(c2_detail$Archival.Country)), 
+                   by = "Var1", all.x = TRUE)
+names(detail_country)[4] <- "Cohort.2"
+detail_country$Cohort.2[is.na(detail_country$Cohort.2)] <- 0
+
+detail_country <- merge(detail_country, as.data.frame(table(c3_detail$Archival.Country)), 
+                   by = "Var1", all.x = TRUE)
+names(detail_country)[5] <- "Cohort.3"
+detail_country$Cohort.3[is.na(detail_country$Cohort.3)] <- 0
+
+detail_country <- merge(detail_country, as.data.frame(table(c4_detail$Archival.Country)), 
+                   by = "Var1", all.x = TRUE)
+names(detail_country)[6] <- "Cohort.4"
+detail_country$Cohort.4[is.na(detail_country$Cohort.4)] <- 0
+
+detail_country <- merge(detail_country, as.data.frame(table(c5_detail$Archival.Country)), 
+                   by = "Var1", all.x = TRUE)
+names(detail_country)[7] <- "Cohort.5"
+detail_country$Cohort.5[is.na(detail_country$Cohort.5)] <- 0
+
+detail_country <- merge(detail_country, as.data.frame(table(c6_detail$Archival.Country)), 
+                   by = "Var1", all.x = TRUE)
+names(detail_country)[8] <- "Cohort.6"
+detail_country$Cohort.6[is.na(detail_country$Cohort.6)] <- 0
+
+colnames(detail_country)[colnames(detail_country) == "Var1"] <- "Archival.Country"
+colnames(detail_country)[colnames(detail_country) == "Freq.x"] <- "Sum"
+
+prelim_country
+detail_country
+write.csv(prelim_country, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/prelim_country.csv", row.names = FALSE)
+write.csv(detail_country, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/detail_country.csv", row.names = FALSE)
+```
+
+# New Countries funded year over year - Archival Country
+```{r}
+# Getting total count of applications from each country
+funded_country <- as.data.frame(table(funded$Archival.Country))
+
+c1 <- funded %>% filter(Cohort == 1)
+c2 <- funded %>% filter(Cohort == 2)
+c3 <- funded %>% filter(Cohort == 3)
+c4 <- funded %>% filter(Cohort == 4)
+c5 <- funded %>% filter(Cohort == 5)
+
+# Merging funded cohort counts
+funded_country <- merge(funded_country, as.data.frame(table(c1$Archival.Country)), 
+                   by = "Var1", all.x = TRUE)
+names(funded_country)[3] <- "Cohort.1"
+funded_country$Cohort.1[is.na(funded_country$Cohort.1)] <- 0
+
+funded_country <- merge(funded_country, as.data.frame(table(c2$Archival.Country)), 
+                   by = "Var1", all.x = TRUE)
+names(funded_country)[4] <- "Cohort.2"
+funded_country$Cohort.2[is.na(funded_country$Cohort.2)] <- 0
+
+funded_country <- merge(funded_country, as.data.frame(table(c3$Archival.Country)), 
+                   by = "Var1", all.x = TRUE)
+names(funded_country)[5] <- "Cohort.3"
+funded_country$Cohort.3[is.na(funded_country$Cohort.3)] <- 0
+
+funded_country <- merge(funded_country, as.data.frame(table(c4$Archival.Country)), 
+                   by = "Var1", all.x = TRUE)
+names(funded_country)[6] <- "Cohort.4"
+funded_country$Cohort.4[is.na(funded_country$Cohort.4)] <- 0
+
+funded_country <- merge(funded_country, as.data.frame(table(c5$Archival.Country)), 
+                   by = "Var1", all.x = TRUE)
+names(funded_country)[7] <- "Cohort.5"
+funded_country$Cohort.5[is.na(funded_country$Cohort.5)] <- 0
+
+colnames(funded_country)[colnames(funded_country) == "Var1"] <- "Archival.Country"
+colnames(funded_country)[colnames(funded_country) == "Freq.x"] <- "Sum"
+
+funded_country
+write.csv(funded_country, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/funded_country.csv", row.names = FALSE)
+```
+
+# New Countries applications year over year - Archival Region
+```{r}
+prelim_region <- as.data.frame(table(prelim$Archival.Region))
+detail_region <- as.data.frame(table(detail$Archival.Region))
+
+prelim_region <- merge(prelim_region, as.data.frame(table(c1_prelim$Archival.Region)), 
+                   by = "Var1", all.x = TRUE)
+names(prelim_region)[3] <- "Cohort.1"
+prelim_region$Cohort.1[is.na(prelim_region$Cohort.1)] <- 0
+
+prelim_region <- merge(prelim_region, as.data.frame(table(c2_prelim$Archival.Region)), 
+                   by = "Var1", all.x = TRUE)
+names(prelim_region)[4] <- "Cohort.2"
+prelim_region$Cohort.2[is.na(prelim_region$Cohort.2)] <- 0
+
+prelim_region <- merge(prelim_region, as.data.frame(table(c3_prelim$Archival.Region)), 
+                   by = "Var1", all.x = TRUE)
+names(prelim_region)[5] <- "Cohort.3"
+prelim_region$Cohort.3[is.na(prelim_region$Cohort.3)] <- 0
+
+prelim_region <- merge(prelim_region, as.data.frame(table(c4_prelim$Archival.Region)), 
+                   by = "Var1", all.x = TRUE)
+names(prelim_region)[6] <- "Cohort.4"
+prelim_region$Cohort.4[is.na(prelim_region$Cohort.4)] <- 0
+
+prelim_region <- merge(prelim_region, as.data.frame(table(c5_prelim$Archival.Region)), 
+                   by = "Var1", all.x = TRUE)
+names(prelim_region)[7] <- "Cohort.5"
+prelim_region$Cohort.5[is.na(prelim_region$Cohort.5)] <- 0
+
+prelim_region <- merge(prelim_region, as.data.frame(table(c6_prelim$Archival.Region)), 
+                   by = "Var1", all.x = TRUE)
+names(prelim_region)[8] <- "Cohort.6"
+prelim_region$Cohort.6[is.na(prelim_region$Cohort.6)] <- 0
+
+colnames(prelim_region)[colnames(prelim_region) == "Var1"] <- "Archival.Region"
+colnames(prelim_region)[colnames(prelim_region) == "Freq.x"] <- "Sum"
+
+detail_region <- merge(detail_region, as.data.frame(table(c1_detail$Archival.Region)), 
+                   by = "Var1", all.x = TRUE)
+names(detail_region)[3] <- "Cohort.1"
+detail_region$Cohort.1[is.na(detail_region$Cohort.1)] <- 0
+
+detail_region <- merge(detail_region, as.data.frame(table(c2_detail$Archival.Region)), 
+                   by = "Var1", all.x = TRUE)
+names(detail_region)[4] <- "Cohort.2"
+detail_region$Cohort.2[is.na(detail_region$Cohort.2)] <- 0
+
+detail_region <- merge(detail_region, as.data.frame(table(c3_detail$Archival.Region)), 
+                   by = "Var1", all.x = TRUE)
+names(detail_region)[5] <- "Cohort.3"
+detail_region$Cohort.3[is.na(detail_region$Cohort.3)] <- 0
+
+detail_region <- merge(detail_region, as.data.frame(table(c4_detail$Archival.Region)), 
+                   by = "Var1", all.x = TRUE)
+names(detail_region)[6] <- "Cohort.4"
+detail_region$Cohort.4[is.na(detail_region$Cohort.4)] <- 0
+
+detail_region <- merge(detail_region, as.data.frame(table(c5_detail$Archival.Region)), 
+                   by = "Var1", all.x = TRUE)
+names(detail_region)[7] <- "Cohort.5"
+detail_region$Cohort.5[is.na(detail_region$Cohort.5)] <- 0
+
+detail_region <- merge(detail_region, as.data.frame(table(c6_detail$Archival.Region)), 
+                   by = "Var1", all.x = TRUE)
+names(detail_region)[8] <- "Cohort.6"
+detail_region$Cohort.6[is.na(detail_region$Cohort.6)] <- 0
+
+colnames(detail_region)[colnames(detail_region) == "Var1"] <- "Archival.Region"
+colnames(detail_region)[colnames(detail_region) == "Freq.x"] <- "Sum"
+
+prelim_region
+detail_region
+write.csv(prelim_region, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/prelim_region.csv", row.names = FALSE)
+write.csv(detail_region, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/detail_region.csv", row.names = FALSE)
+```
+
+# New Countries funded year over year - Archival Country
+```{r}
+funded$Archival.Region[funded$Archival.Region == "South East Asia"] <- "Southeast Asia"
+
+# Getting total count of applications from each region
+funded_region <- as.data.frame(table(funded$Archival.Region))
+
+c1 <- funded %>% filter(Cohort == 1)
+c2 <- funded %>% filter(Cohort == 2)
+c3 <- funded %>% filter(Cohort == 3)
+c4 <- funded %>% filter(Cohort == 4)
+c5 <- funded %>% filter(Cohort == 5)
+
+# Merging funded cohort counts
+funded_region <- merge(funded_region, as.data.frame(table(c1$Archival.Region)), 
+                   by = "Var1", all.x = TRUE)
+names(funded_region)[3] <- "Cohort.1"
+funded_region$Cohort.1[is.na(funded_region$Cohort.1)] <- 0
+
+funded_region <- merge(funded_region, as.data.frame(table(c2$Archival.Region)), 
+                   by = "Var1", all.x = TRUE)
+names(funded_region)[4] <- "Cohort.2"
+funded_region$Cohort.2[is.na(funded_region$Cohort.2)] <- 0
+
+funded_region <- merge(funded_region, as.data.frame(table(c3$Archival.Region)), 
+                   by = "Var1", all.x = TRUE)
+names(funded_region)[5] <- "Cohort.3"
+funded_region$Cohort.3[is.na(funded_region$Cohort.3)] <- 0
+
+funded_region <- merge(funded_region, as.data.frame(table(c4$Archival.Region)), 
+                   by = "Var1", all.x = TRUE)
+names(funded_region)[6] <- "Cohort.4"
+funded_region$Cohort.4[is.na(funded_region$Cohort.4)] <- 0
+
+funded_region <- merge(funded_region, as.data.frame(table(c5$Archival.Region)), 
+                   by = "Var1", all.x = TRUE)
+names(funded_region)[7] <- "Cohort.5"
+funded_region$Cohort.5[is.na(funded_region$Cohort.5)] <- 0
+
+colnames(funded_region)[colnames(funded_region) == "Var1"] <- "Archival.Region"
+colnames(funded_region)[colnames(funded_region) == "Freq.x"] <- "Sum"
+
+funded_region
+write.csv(funded_region, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/funded_region.csv", row.names = FALSE)
+```
+
+# Countries with applications that have never been funded
+```{r}
+no_fund <- data.frame("Archival.Country" = setdiff(prelim_country$Archival.Country, funded_country$Archival.Country))
+no_fund
+write.csv(no_fund, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/no_fund.csv", row.names = FALSE)
+```
+
+# Archival.Country and PI.Country
+```{r}
+pi_archival <- function(data){
+  a <- length(intersect(data$Archival.Country, data$PI.Country)) + 
+    length(setdiff(data$Archival.Country, data$PI.Country))
+  100 - ((length(setdiff(data$Archival.Country, data$PI.Country)) / a) * 100)
+}
+
+pi_archival2 <- function(data, cohort){
+  temp_df <- data %>% filter(Cohort == cohort)
+  a <- length(intersect(temp_df$Archival.Country, temp_df$Host.Country)) + 
+    length(setdiff(temp_df$Archival.Country, temp_df$Host.Country))
+  100 - ((length(setdiff(temp_df$Archival.Country, temp_df$Host.Country)) / a) * 100)
+}
+
+pi_archival_count <- function(data){
+  a <- length(intersect(data$Archival.Country, data$PI.Country)) + 
+    length(setdiff(data$Archival.Country, data$PI.Country))
+  b <- a - length(setdiff(data$Archival.Country, data$PI.Country))
+  paste0(b, "/", a)
+}
+
+pi_archival_count2 <- function(data, cohort){
+  temp_df <- data %>% filter(Cohort == cohort)
+  a <- length(intersect(temp_df$Archival.Country, temp_df$Host.Country)) + 
+    length(setdiff(temp_df$Archival.Country, temp_df$Host.Country))
+  b <- a - length(setdiff(temp_df$Archival.Country, temp_df$Host.Country))
+  paste0(b, "/", a)
+}
+
+pi_archival_df <- data.frame("Cohort" = c(c1_prelim$Cohort[1], c2_prelim$Cohort[1], c3_prelim$Cohort[1], 
+                                          c4_prelim$Cohort[1], c5_prelim$Cohort[1], c6_prelim$Cohort[1]),
+                             "Prelim Percent" = c(pi_archival(c1_prelim), pi_archival(c2_prelim), pi_archival(c3_prelim),
+                                                  pi_archival(c4_prelim), NaN, pi_archival(c6_prelim)),
+                             "Prelim Count" = c(pi_archival_count(c1_prelim), pi_archival_count(c2_prelim), pi_archival_count(c3_prelim),
+                                                pi_archival_count(c4_prelim), NaN, pi_archival_count(c6_prelim)),
+                             "Detailed Percent" = c(pi_archival(c1_detail), pi_archival(c2_detail), pi_archival(c3_detail),
+                                                    NaN, NaN, pi_archival(c6_detail)),
+                             "Detailed Count" = c(pi_archival_count(c1_detail), pi_archival_count(c2_detail), pi_archival_count(c3_detail),
+                                                  NaN, NaN, pi_archival_count(c6_detail)),
+                             "Funded Percent" = c(pi_archival2(funded, 1), pi_archival2(funded, 2), pi_archival2(funded, 3),
+                                                  pi_archival2(funded, 4), pi_archival2(funded, 5), NaN),
+                             "Funded Count" = c(pi_archival_count2(funded, 1), pi_archival_count2(funded, 2), pi_archival_count2(funded, 3),
+                                                pi_archival_count2(funded, 4), pi_archival_count2(funded, 5), NaN))
+
+pi_archival_df
+write.csv(pi_archival_df, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/pi_archival_df.csv", row.names = FALSE)
+```
+
+```{r}
+pi_archival_same <- function(data){
+  sort(intersect(data$Archival.Country, data$PI.Country))
+}
+
+pi_archival_same2 <- function(data, cohort){
+  temp_df <- data %>% filter(Cohort == cohort)
+  sort(intersect(temp_df$Archival.Country, temp_df$Host.Country))
+}
+
+c1_prelim_same <- data.frame("Cohort 1" = pi_archival_same(c1_prelim))
+c2_prelim_same <- data.frame("Cohort 2" = pi_archival_same(c2_prelim))
+c3_prelim_same <- data.frame("Cohort 3" = pi_archival_same(c3_prelim))
+c4_prelim_same <- data.frame("Cohort 4" = pi_archival_same(c4_prelim))
+c6_prelim_same <- data.frame("Cohort 6" = pi_archival_same(c6_prelim))
+
+write.csv(c1_prelim_same, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c1_prelim_same.csv", row.names = FALSE)
+write.csv(c2_prelim_same, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c2_prelim_same.csv", row.names = FALSE)
+write.csv(c3_prelim_same, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c3_prelim_same.csv", row.names = FALSE)
+write.csv(c4_prelim_same, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c4_prelim_same.csv", row.names = FALSE)
+write.csv(c6_prelim_same, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c6_prelim_same.csv", row.names = FALSE)
+
+c1_detail_same <- data.frame("Cohort 1" = pi_archival_same(c1_detail))
+c2_detail_same <- data.frame("Cohort 2" = pi_archival_same(c2_detail))
+c3_detail_same <- data.frame("Cohort 3" = pi_archival_same(c3_detail))
+c6_detail_same <- data.frame("Cohort 6" = pi_archival_same(c6_detail))
+
+write.csv(c1_detail_same, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c1_detail_same.csv", row.names = FALSE)
+write.csv(c2_detail_same, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c2_detail_same.csv", row.names = FALSE)
+write.csv(c3_detail_same, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c3_detail_same.csv", row.names = FALSE)
+write.csv(c6_detail_same, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c6_detail_same.csv", row.names = FALSE)
+
+c1_funded_same <- data.frame("Cohort 1" = pi_archival_same2(funded, 1))
+c2_funded_same <- data.frame("Cohort 2" = pi_archival_same2(funded, 2))
+c3_funded_same <- data.frame("Cohort 3" = pi_archival_same2(funded, 3))
+c4_funded_same <- data.frame("Cohort 4" = pi_archival_same2(funded, 4))
+c5_funded_same <- data.frame("Cohort 5" = pi_archival_same2(funded, 5))
+
+write.csv(c1_funded_same, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c1_funded_same.csv", row.names = FALSE)
+write.csv(c2_funded_same, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c2_funded_same.csv", row.names = FALSE)
+write.csv(c3_funded_same, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c3_funded_same.csv", row.names = FALSE)
+write.csv(c4_funded_same, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c4_funded_same.csv", row.names = FALSE)
+write.csv(c5_funded_same, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c5_funded_same.csv", row.names = FALSE)
+```
+
+```{r}
+pi_archival_diff <- function(data){
+  sort(setdiff(data$Archival.Country, data$PI.Country))
+}
+
+pi_archival_diff2 <- function(data, cohort){
+  temp_df <- data %>% filter(Cohort == cohort)
+  sort(setdiff(temp_df$Archival.Country, temp_df$Host.Country))
+}
+
+c1_prelim_diff <- data.frame("Cohort 1" = pi_archival_diff(c1_prelim))
+c2_prelim_diff <- data.frame("Cohort 2" = pi_archival_diff(c2_prelim))
+c3_prelim_diff <- data.frame("Cohort 3" = pi_archival_diff(c3_prelim))
+c4_prelim_diff <- data.frame("Cohort 4" = pi_archival_diff(c4_prelim))
+c5_prelim_diff <- data.frame("Cohort 5" = pi_archival_diff(c5_prelim))
+c6_prelim_diff <- data.frame("Cohort 6" = pi_archival_diff(c6_prelim))
+
+write.csv(c1_prelim_diff, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c1_prelim_diff.csv", row.names = FALSE)
+write.csv(c2_prelim_diff, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c2_prelim_diff.csv", row.names = FALSE)
+write.csv(c3_prelim_diff, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c3_prelim_diff.csv", row.names = FALSE)
+write.csv(c4_prelim_diff, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c4_prelim_diff.csv", row.names = FALSE)
+write.csv(c5_prelim_diff, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c5_prelim_diff.csv", row.names = FALSE)
+write.csv(c6_prelim_diff, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c6_prelim_diff.csv", row.names = FALSE)
+
+c1_detail_diff <- data.frame("Cohort 1" = pi_archival_diff(c1_detail))
+c2_detail_diff <- data.frame("Cohort 2" = pi_archival_diff(c2_detail))
+c3_detail_diff <- data.frame("Cohort 3" = pi_archival_diff(c3_detail))
+c4_detail_diff <- data.frame("Cohort 4" = pi_archival_diff(c4_detail))
+c5_detail_diff <- data.frame("Cohort 5" = pi_archival_diff(c5_detail))
+c6_detail_diff <- data.frame("Cohort 6" = pi_archival_diff(c6_detail))
+
+write.csv(c1_detail_diff, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c1_detail_diff.csv", row.names = FALSE)
+write.csv(c2_detail_diff, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c2_detail_diff.csv", row.names = FALSE)
+write.csv(c3_detail_diff, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c3_detail_diff.csv", row.names = FALSE)
+write.csv(c4_detail_diff, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c4_detail_diff.csv", row.names = FALSE)
+write.csv(c5_detail_diff, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c5_detail_diff.csv", row.names = FALSE)
+write.csv(c6_detail_diff, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c6_detail_diff.csv", row.names = FALSE)
+
+c1_funded_diff <- data.frame("Cohort 1" = pi_archival_diff2(funded, 1))
+c2_funded_diff <- data.frame("Cohort 2" = pi_archival_diff2(funded, 2))
+c3_funded_diff <- data.frame("Cohort 3" = pi_archival_diff2(funded, 3))
+c4_funded_diff <- data.frame("Cohort 4" = pi_archival_diff2(funded, 4))
+c5_funded_diff <- data.frame("Cohort 5" = pi_archival_diff2(funded, 5))
+
+write.csv(c1_funded_diff, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c1_funded_diff.csv", row.names = FALSE)
+write.csv(c2_funded_diff, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c2_funded_diff.csv", row.names = FALSE)
+write.csv(c3_funded_diff, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c3_funded_diff.csv", row.names = FALSE)
+write.csv(c4_funded_diff, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c4_funded_diff.csv", row.names = FALSE)
+write.csv(c5_funded_diff, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/c5_funded_diff.csv", row.names = FALSE)
+```
+
+# Money to Countries and Regions
+```{r}
+funded$Grant.Amount <- as.numeric(gsub("[$,.]", "", funded$Grant.Amount))
+
+funded_country <- funded %>% 
+  group_by(Archival.Country) %>% 
+  summarise("Total Sum" = sum(Grant.Amount))
+
+funded_region <- funded %>% 
+  group_by(Archival.Region) %>% 
+  summarise("Total Sum" = sum(Grant.Amount))
+
+funded_country
+funded_region
+
+write.csv(funded_country, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/funded_country.csv", row.names = FALSE)
+write.csv(funded_region, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/funded_region.csv", row.names = FALSE)
+```
+
+# Material Type
+```{r}
+colnames(c6_detail)[colnames(c6_detail) == "Primary.archival.type...nbsp..nbsp."] <- "Archival.Material"
+
+c1_detail$Decision[c1_detail$Decision == "D - No"] <- "No"
+c1_detail$Decision[c1_detail$Decision == "D - Approve, No"] <- "No"
+c1_detail$Decision[c1_detail$Decision == "D - Yes"] <- "Yes"
+c2_detail$Decision[c2_detail$Decision == TRUE] <- "Yes"
+c2_detail$Decision[c2_detail$Decision == FALSE] <- "No"
+
+c1_detail_mat <- c1_detail[,c("Cohort", "Decision", "Archival.Material")]
+c2_detail_mat <- c2_detail[,c("Cohort", "Decision", "Archival.Material")]
+
+detail_mat <- rbind(c1_detail_mat, c2_detail_mat)
+detail_mat_yes <- detail_mat %>% filter(Decision == "Yes")
+detail_mat_yes <- as.data.frame(table(detail_mat_yes$Archival.Material))
+colnames(detail_mat_yes)[colnames(detail_mat_yes) == "Var1"] <- "Archival.Material"
+detail_mat_no <- detail_mat %>% filter(Decision == "No")
+detail_mat_no <- as.data.frame(table(detail_mat_no$Archival.Material))
+colnames(detail_mat_no)[colnames(detail_mat_no) == "Var1"] <- "Archival.Material"
+
+c1_prelim_mat <- c1_prelim[,c("Cohort", "Decision", "Archival.Material")]
+c2_prelim_mat <- c2_prelim[,c("Cohort", "Decision", "Archival.Material")]
+c3_prelim_mat <- c3_prelim[,c("Cohort", "Decision", "Archival.Material")]
+c4_prelim_mat <- c4_prelim[,c("Cohort", "Decision", "Archival.Material")]
+c5_prelim_mat <- c5_prelim[,c("Cohort", "Decision", "Archival.Material")]
+
+prelim_mat <- rbind(c1_prelim_mat, c2_prelim_mat, c3_prelim_mat, c4_prelim_mat, c5_prelim_mat)
+prelim_mat_yes <- prelim_mat %>% filter(Decision == "Yes")
+prelim_mat_yes <- as.data.frame(table(prelim_mat_yes$Archival.Material))
+colnames(prelim_mat_yes)[colnames(prelim_mat_yes) == "Var1"] <- "Archival.Material"
+prelim_mat_no <- prelim_mat %>% filter(Decision == "No")
+prelim_mat_no <- as.data.frame(table(prelim_mat_no$Archival.Material))
+colnames(prelim_mat_no)[colnames(prelim_mat_no) == "Var1"] <- "Archival.Material"
+
+prelim_mat_no$Archival.Material <- as.character(prelim_mat_no$Archival.Material)
+prelim_mat_no <- rbind(prelim_mat_no, c("", 0), c("Maps", 0))
+prelim_mat_yes$Freq <- as.numeric(prelim_mat_yes$Freq)
+prelim_mat_no$Freq <- as.numeric(prelim_mat_no$Freq)
+prelim_mat <- merge(prelim_mat_yes, prelim_mat_no, by = "Archival.Material")
+prelim_mat$Decision.Yes.Percentage <- paste0((prelim_mat$Freq.x/(prelim_mat$Freq.x + prelim_mat$Freq.y))*100)
+prelim_mat$Decision.Yes.Count <- paste0(prelim_mat$Freq.x, "/", (prelim_mat$Freq.x + prelim_mat$Freq.y))
+prelim_mat <- prelim_mat[, c("Archival.Material", "Decision.Yes.Percentage", "Decision.Yes.Count")]
+
+detail_mat_no$Archival.Material <- as.character(detail_mat_no$Archival.Material)
+detail_mat_yes$Archival.Material <- as.character(detail_mat_yes$Archival.Material)
+detail_mat_no <- rbind(detail_mat_no, c("Digital files", 0), c("Photo negatives", 0),
+                       c("Video recordings (VHS)", 0))
+detail_mat_yes <- rbind(detail_mat_yes, c("Fine art", 0))
+detail_mat_yes$Freq <- as.numeric(detail_mat_yes$Freq)
+detail_mat_no$Freq <- as.numeric(detail_mat_no$Freq)
+detail_mat <- merge(detail_mat_yes, detail_mat_no, by = "Archival.Material")
+detail_mat$Decision.Yes.Percentage <- paste0((detail_mat$Freq.x/(detail_mat$Freq.x + detail_mat$Freq.y))*100)
+detail_mat$Decision.Yes.Count <- paste0(detail_mat$Freq.x, "/", (detail_mat$Freq.x + detail_mat$Freq.y))
+detail_mat <- detail_mat[, c("Archival.Material", "Decision.Yes.Percentage", "Decision.Yes.Count")]
+
+prelim_mat
+detail_mat
+
+write.csv(prelim_mat, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/prelim_mat.csv", row.names = FALSE)
+write.csv(detail_mat, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/detail_mat.csv", row.names = FALSE)
+```
+
+# Grant Type
+```{r}
+colnames(funded)[colnames(funded) == "Grant.Type"] <- "Grant"
+funded$Grant[funded$Grant == "Project Grant"] <- "Project"
+funded$Grant[funded$Grant == "Planning Grant"] <- "Planning"
+
+prelim_grant_country <- prelim %>% group_by(Archival.Country, Grant) %>% summarise("Total" = length(Grant), .groups = "drop")
+prelim_grant_region <- prelim %>% group_by(Archival.Region, Grant) %>% summarise("Total" = length(Grant), .groups = "drop")
+detail_grant_country <- detail %>% group_by(Archival.Country, Grant) %>% summarise("Total" = length(Grant), .groups = "drop")
+detail_grant_region <- detail %>% group_by(Archival.Region, Grant) %>% summarise("Total" = length(Grant), .groups = "drop")
+funded_grant_country <- funded %>% group_by(Archival.Country, Grant) %>% summarise("Total" = length(Grant), .groups = "drop")
+funded_grant_region <- funded %>% group_by(Archival.Region, Grant) %>% summarise("Total" = length(Grant), .groups = "drop")
+
+prelim_grant_country_plan <- prelim_grant_country %>% filter(Grant == "Planning")
+prelim_grant_country_proj <- prelim_grant_country %>% filter(Grant == "Project")
+prelim_grant_country <- merge(prelim_grant_country_plan, prelim_grant_country_proj, by = "Archival.Country", all = TRUE)
+prelim_grant_country$Planning <- prelim_grant_country$Total.x
+prelim_grant_country$Project <- prelim_grant_country$Total.y
+prelim_grant_country[is.na(prelim_grant_country)] <- 0
+prelim_grant_country <- prelim_grant_country[, c("Archival.Country", "Planning", "Project")]
+
+prelim_grant_region_plan <- prelim_grant_region %>% filter(Grant == "Planning")
+prelim_grant_region_proj <- prelim_grant_region %>% filter(Grant == "Project")
+prelim_grant_region <- merge(prelim_grant_region_plan, prelim_grant_region_proj, by = "Archival.Region", all = TRUE)
+prelim_grant_region$Planning <- prelim_grant_region$Total.x
+prelim_grant_region$Project <- prelim_grant_region$Total.y
+prelim_grant_region[is.na(prelim_grant_region)] <- 0
+prelim_grant_region <- prelim_grant_region[, c("Archival.Region", "Planning", "Project")]
+
+detail_grant_country_plan <- detail_grant_country %>% filter(Grant == "Planning")
+detail_grant_country_proj <- detail_grant_country %>% filter(Grant == "Project")
+detail_grant_country <- merge(detail_grant_country_plan, detail_grant_country_proj, by = "Archival.Country", all = TRUE)
+detail_grant_country$Planning <- detail_grant_country$Total.x
+detail_grant_country$Project <- detail_grant_country$Total.y
+detail_grant_country[is.na(detail_grant_country)] <- 0
+detail_grant_country <- detail_grant_country[, c("Archival.Country", "Planning", "Project")]
+
+detail_grant_region_plan <- detail_grant_region %>% filter(Grant == "Planning")
+detail_grant_region_proj <- detail_grant_region %>% filter(Grant == "Project")
+detail_grant_region <- merge(detail_grant_region_plan, detail_grant_region_proj, by = "Archival.Region", all = TRUE)
+detail_grant_region$Planning <- detail_grant_region$Total.x
+detail_grant_region$Project <- detail_grant_region$Total.y
+detail_grant_region[is.na(detail_grant_region)] <- 0
+detail_grant_region <- detail_grant_region[, c("Archival.Region", "Planning", "Project")]
+
+funded_grant_country_plan <- funded_grant_country %>% filter(Grant == "Planning")
+funded_grant_country_proj <- funded_grant_country %>% filter(Grant == "Project")
+funded_grant_country <- merge(funded_grant_country_plan, funded_grant_country_proj, by = "Archival.Country", all = TRUE)
+funded_grant_country$Planning <- funded_grant_country$Total.x
+funded_grant_country$Project <- funded_grant_country$Total.y
+funded_grant_country[is.na(funded_grant_country)] <- 0
+funded_grant_country <- funded_grant_country[, c("Archival.Country", "Planning", "Project")]
+
+funded_grant_region_plan <- funded_grant_region %>% filter(Grant == "Planning")
+funded_grant_region_proj <- funded_grant_region %>% filter(Grant == "Project")
+funded_grant_region <- merge(funded_grant_region_plan, funded_grant_region_proj, by = "Archival.Region", all = TRUE)
+funded_grant_region$Planning <- funded_grant_region$Total.x
+funded_grant_region$Project <- funded_grant_region$Total.y
+funded_grant_region[is.na(funded_grant_region)] <- 0
+funded_grant_region <- funded_grant_region[, c("Archival.Region", "Planning", "Project")]
+
+prelim_grant_country
+prelim_grant_region
+detail_grant_country
+detail_grant_region
+funded_grant_country
+funded_grant_region
+
+write.csv(prelim_grant_country, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/prelim_grant_country.csv", row.names = FALSE)
+write.csv(prelim_grant_region, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/prelim_grant_region.csv", row.names = FALSE)
+write.csv(detail_grant_country, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/detail_grant_country.csv", row.names = FALSE)
+write.csv(detail_grant_region, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/detail_grant_region.csv", row.names = FALSE)
+write.csv(funded_grant_country, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/funded_grant_country.csv", row.names = FALSE)
+write.csv(funded_grant_region, "/Users/ShiyuMurashima/Desktop/MEAP-Data-Lab/funded_grant_region.csv", row.names = FALSE)
+```
